@@ -1,18 +1,30 @@
 use std::process::Command;
 
 fn run_command(command: &str) -> String {
-    let args = command.split_whitespace().collect::<Vec<&str>>();
+    let args: Vec<&str> = command.split(" ").collect();
     let output = Command::new(args[0])
         .args(&args[1..])
-        .output()
-        .expect("Failed to execute command");
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    stdout.to_string()
+        .output();
+    match output {
+        Ok(output) => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            stdout.to_string()
+        },
+        Err(error) => {
+            println!("Command failed: {command}");
+            eprintln!("error: {}", error);
+            "".to_string()
+        }
+    }
+
 }
 
 pub fn run_lsblk(device: &str) -> serde_json::Value {
     let command = "lsblk -J -o NAME,SIZE,TYPE,MOUNTPOINT";
     let output = run_command(command);
+    if output.is_empty() {
+        return serde_json::json!({});
+    }
     let devices: serde_json::Value = serde_json::from_str(&output).unwrap();
     let devices = devices["blockdevices"].as_array().unwrap();
     for parent in devices {
@@ -27,5 +39,5 @@ pub fn run_lsblk(device: &str) -> serde_json::Value {
             }
         }
     }
-    panic!("Device not found");
+    serde_json::json!({})
 }
