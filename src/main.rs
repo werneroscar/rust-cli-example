@@ -1,6 +1,7 @@
 use clap::App;
 use serde_json;
 use blkrs::run_lsblk;
+mod util; // pull util module into scope
 
 fn main() {
     let matches = App::new("lsblk")
