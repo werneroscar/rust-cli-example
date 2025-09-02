@@ -7,10 +7,10 @@ use blkrs::run_lsblk;
 #[command(version = "0.0.1", author = "Werner Oscar", name = "lsblk-rs", about = "lsblk in Rust")]
 
 struct Opts {
-    #[clap(short, long, action = ArgAction::Count)]
+    #[clap(short, long, action = ArgAction::Count, help = "Set verbosity level")]
     verbose_level: u8,
 
-    #[clap(short, long)]
+    #[clap(short, long, help = "Enable debug mode", env = "BLKRS_DEBUG")]
     debug: bool,
     
     #[clap(subcommand)]
@@ -31,11 +31,9 @@ struct InfoOpts {
 
 fn main() {
     let opts: Opts = Opts::parse();
-    match opts.cmd {
-        Command::Info(info) => {
-            let device = info.device;
-            let output = run_lsblk(&device);
-            println!("{}", serde_json::to_string_pretty(&output).unwrap());
-        }
+    
+    // Example of using global args
+    if opts.debug {
+        println!("Debug mode is enabled");
     }
 }
