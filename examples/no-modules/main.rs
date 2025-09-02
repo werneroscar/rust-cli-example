@@ -39,7 +39,7 @@ fn main() {
             clap::Arg::with_name("device")
                 .help("Device to query")
                 .required(true)
-                .index(1)
+                .index(1),
         )
         .get_matches();
 
