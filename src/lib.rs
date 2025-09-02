@@ -1,4 +1,5 @@
 use std::process::Command;
+use log::error;
 
 fn run_command(command: &str) -> String {
     let args: Vec<&str> = command.split(" ").collect();
@@ -22,10 +23,18 @@ fn run_command(command: &str) -> String {
 pub fn run_lsblk(device: &str) -> serde_json::Value {
     let command = "lsblk -J -o NAME,SIZE,TYPE,MOUNTPOINT";
     let output = run_command(command);
-    if output.is_empty() {
-        return serde_json::json!({});
-    }
-    let devices: serde_json::Value = serde_json::from_str(&output).unwrap();
+    // if output.is_empty() {
+    //     return serde_json::json!({});
+    // }
+    // let devices: serde_json::Value = serde_json::from_str(&output).unwrap();
+    let devices = match serde_json::from_str::<serde_json::Value>(&output) {
+        Ok(devices) => devices,
+        Err(e) => {
+            error!("Failed to parse/serialize JSON output from lsblk: {e}");
+            error!("Full Output: {output}");
+            return serde_json::json!({})
+        }
+    };
     let devices = devices["blockdevices"].as_array().unwrap();
     for parent in devices {
         if parent["name"] == device {
